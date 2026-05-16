@@ -1,8 +1,16 @@
 import math
+import random
 
 
 def sigmoid(x):
 	return 1 / (1 + math.e ** (-x))
+
+def column(arr):
+	res = Matrix(len(arr), 1)
+	for i in range(len(arr)):
+		res.matrix[i][0] = arr[i]
+	
+	return arr
 
 class Matrix:
 	rows: int
@@ -29,6 +37,11 @@ class Matrix:
 		for i in range(self.rows):
 			for j in range(self.cols):
 				res.append(self.matrix[i][j])
+
+	def randomize(self):
+		for i in range(self.rows):
+			for j in range(self.cols):
+				self.matrix[i][j] = random.uniform(-1, 1)
 
 	def __mul__(self, other):
 		if isinstance(other, Matrix):
