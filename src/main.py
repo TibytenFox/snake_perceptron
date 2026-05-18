@@ -40,7 +40,7 @@ def main_ai():
     best_snakes = []
     global_mutatin_rate = 0.01
 
-    generations = 50
+    generations = 100
 
     while population.gen < generations:
         population.update()
@@ -66,6 +66,10 @@ def main_ai():
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    best_snake.reset()
+                    best_snake.food.respawn(field, best_snake)
+                
                 if event.key == pygame.K_q:
                     pygame.quit()
                     sys.exit()

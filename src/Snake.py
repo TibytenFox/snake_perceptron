@@ -68,14 +68,14 @@ class Snake:
                 }
     
     def get_body_dis(self):
-        directions = {"left": -1,
-                      "up-left": -1,
-                      "right": -1,
-                      "up-right": -1,
-                      "up": -1,
-                      "down-left": -1,
-                      "down": -1,
-                      "down-right": -1
+        directions = {"left": 0,
+                      "up-left": 0,
+                      "right": 0,
+                      "up-right": 0,
+                      "up": 0,
+                      "down-left": 0,
+                      "down": 0,
+                      "down-right": 0
                       }
         
         head = self.positions[0]
@@ -135,28 +135,33 @@ class Snake:
         head = self.positions[0]
 
         if head[1] == self.food.position[1] and head[0] >= self.food.position[0]:
-            directions["up"] = 1
+            directions["up"] = 1 / (head[0] - self.food.position[0] + 1)
         if sum(head) == sum(self.food.position) and head[0] >= self.food.position[0]:
-            directions["up-right"] = 1
+            directions["up-right"] = 1 / (head[0] - self.food.position[0] + 1)
         if head[0] == self.food.position[0] and head[1] <= self.food.position[1]:
-            directions["right"] = 1
+            directions["right"] = 1 / (self.food.position[1] - head[1] + 1)
         if self.food.position[0] - head[0] == self.food.position[1] - head[1] and \
                 head[0] <= self.food.position[0]:
-            directions["down-right"] = 1
+            directions["down-right"] = 1 / (self.food.position[0] - head[0] + 1)
         if head[1] == self.food.position[1] and head[0] <= self.food.position[0]:
-            directions["down"] = 1
+            directions["down"] = 1 / (self.food.position[0] - head[0] + 1)
         if sum(head) == sum(self.food.position) and head[0] <= self.food.position[0]:
-            directions["down-left"] = 1
+            directions["down-left"] = 1 / (self.food.position[0] - head[0] + 1)
         if head[0] == self.food.position[0] and head[1] >= self.food.position[1]:
-            directions["left"] = 1
+            directions["left"] = 1 / (head[1] - self.food.position[1] + 1)
         if self.food.position[0] - head[0] == self.food.position[1] - head[1] and \
                 head[0] >= self.food.position[0]:
-            directions["up-left"] = 1
+            directions["up-left"] = 1 / (head[0] - self.food.position[0] + 1)
 
         return directions
 
     def change_direction_ai(self):
         self.decision = self.brain.output(self.vision)
+
+        opposite = {"up": "down", "down": "up", "left": "right", "right": "left"}
+        forbidden = opposite[self.direction]
+        idx_map = {"up": 0, "down": 1, "left": 2, "right": 3}
+        self.decision[idx_map[forbidden]] = -float('inf')
 
         res = max([(self.decision[i], i) for i in range(len(self.decision))])
 
@@ -173,12 +178,7 @@ class Snake:
         self.brain.mutate(mutation_rate)
 
     def calculate_fitness(self):
-        if self.score < 10:
-            self.fitness = int(self.life_time * self.life_time * (2 ** self.score))
-        else:
-            self.fitness = self.life_time * self.life_time
-            self.fitness *= 2 ** 10
-            self.fitness *= self.score - 9
+        self.fitness = 10 ** (self.score - 2) + self.life_time // 10
 
     def crossover(self, partner):
         child = Snake(self.field)
