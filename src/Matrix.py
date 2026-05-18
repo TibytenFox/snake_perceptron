@@ -10,12 +10,12 @@ def column(arr: list):
     for i in range(len(arr)):
         res.matrix[i][0] = arr[i]
 
-    return arr
+    return res
 
 class Matrix:
     rows: int
     cols: int
-    data: [[float]]
+    data: list[list[float]]
 
     def __init__(self, *args, **kwargs):
         if "data" in kwargs:
@@ -55,13 +55,13 @@ class Matrix:
 
     def __mul__(self, other):
         if isinstance(other, Matrix):
-            if not (self.cols == other.rows): return
+            if self.cols != other.rows: return
             res = Matrix(self.rows, other.cols)
 
-            for i in range(self.cols):
-                for j in range(other.rows):
+            for i in range(self.rows):
+                for j in range(other.cols):
                     for ind in range(self.cols):
-                        res.matrx[i][j] += self.matrix[i + ind] * other.matrix[j + ind]
+                        res.matrix[i][j] += self.matrix[i][ind] * other.matrix[ind][j]
 
             return res
 

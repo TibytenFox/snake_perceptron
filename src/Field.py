@@ -1,7 +1,7 @@
 import pygame
 import sys
 from Snake import *
-from Food import *
+
 
 class Field:
     """Game field: manages drawing, grid, and game state."""
@@ -57,13 +57,13 @@ class Field:
             # Fallback: show score in window title
             pygame.display.set_caption(f"Snake Game - Score: {score}")
 
-    def update(self, snake, food):
+    def update(self, snake):
         """Redraw the whole field."""
         self.screen.fill(self.bg_color)
         self.draw_grid()
 
         # Draw food
-        self.draw_rect(food.position, self.food_color)
+        self.draw_rect(snake.food.position, self.food_color)
 
         # Draw snake
         for i, segment in enumerate(snake.positions):
@@ -72,42 +72,3 @@ class Field:
 
         self.display_score(snake.score)
         pygame.display.flip()
-
-
-
-def main():
-    field = Field()
-    snake = Snake(field)
-    food = Food(field, snake)
-
-    fps = 10
-    clock = pygame.time.Clock()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r and not snake.alive:
-                    snake.reset()
-                    food.respawn(field, snake)
-                else:
-                    snake.change_direction(event.key)
-
-        if snake.alive:
-            snake.move(food)
-            field.update(snake, food)
-        else:
-            # Show game over message
-            field.screen.fill((0, 0, 0))
-            game_over_text = field.font.render("GAME OVER - Press R to restart", 1, (255, 0, 0))
-            score_text = field.font.render(f"Final Score: {snake.score}", 1, (255, 255, 0))
-            field.screen.blit(game_over_text, (field.width//2 - 180, field.height//2 - 20))
-            field.screen.blit(score_text, (field.width//2 - 80, field.height//2 + 20))
-            pygame.display.flip()
-
-        clock.tick(fps)
-
-if __name__ == "__main__":
-    main()
