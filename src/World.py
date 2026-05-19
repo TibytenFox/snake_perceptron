@@ -14,6 +14,11 @@ class World:
         self.all_time_best_snake = None
         self.historical_best_fitness = 0
 
+        self.history_generations = []
+        self.history_max_fitness = []
+        self.history_avg_fitness = []
+        self.history_max_score = []
+
     def train(self):
         """Проводит симуляцию генетического алгоритма без отрисовки (для скорости)."""
         print(f"[{'='*40}]")
@@ -53,6 +58,12 @@ class World:
                       f"Ср. Фитнес: {avg_fitness:8.2f} | "
                       f"Рекорд яблок: {max_score}")
                 
+                # Сохранение метрик
+                self.history_generations.append(self.population.gen)
+                self.history_max_fitness.append(current_best_snake.fitness)
+                self.history_avg_fitness.append(avg_fitness)
+                self.history_max_score.append(max_score)
+                
                 # Эволюция
                 self.population.natural_selection()
                 self.population.mutate(self.mutation_rate)
@@ -61,6 +72,23 @@ class World:
         print(f" ОБУЧЕНИЕ ЗАВЕРШЕНО")
         print(f" Абсолютный рекорд Fitness: {self.historical_best_fitness:.2f}")
         print(f"[{'='*40}]\n")
+
+        self.save_history_to_file()
+
+    def save_history_to_file(self, filename="./stats.txt"):
+        """Сохраняет собранные метрики в текстовый файл для последующего построения графиков."""
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                # Записываем заголовки колонок
+                f.write("generation,max_fitness,avg_fitness,max_score\n")
+                for i in range(len(self.history_generations)):
+                    f.write(f"{self.history_generations[i]},"
+                            f"{self.history_max_fitness[i]},"
+                            f"{self.history_avg_fitness[i]},"
+                            f"{self.history_max_score[i]}\n")
+            print(f"Статистика успешно сохранена в файл {filename}")
+        except Exception as e:
+            print(f"Не удалось сохранить статистику: {e}")
 
     def play_best(self, fps=15):
         """Запускает визуальную симуляцию лучшей найденной змейки."""

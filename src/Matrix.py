@@ -107,7 +107,7 @@ class Matrix:
             for j in range(self.cols):
                 random_num = random.random()
                 if random_num < mutation_rate:
-                    self.matrix[i][j] += random.gauss(-1, 1) / 5 # очень маленькое число
+                    self.matrix[i][j] += random.gauss(0, 1) / 5 # очень маленькое число
 
                     if self.matrix[i][j] < -1: self.matrix[i][j] = -1
                     if self.matrix[i][j] > 1: self.matrix[i][j] = 1

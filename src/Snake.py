@@ -166,14 +166,11 @@ class Snake:
         self.brain.mutate(mutation_rate)
 
     def calculate_fitness(self):
-        if self.score < 2:
-            self.fitness = self.life_time * (self.score + 1)
-        else:
-            self.fitness = self.life_time * (self.score ** 2)
+        self.fitness = self.life_time + (self.score ** 3) * 100
 
     def crossover(self, partner):
         child = Snake(self.field)
-        child.brain = child.brain.crossover(partner.brain)
+        child.brain = self.brain.crossover(partner.brain)
         return child
 
     def move(self):
@@ -238,3 +235,28 @@ class Snake:
         self.time_to_live = 200
         self.life_time = 0
         self.fitness = 0
+
+    def save_to_file(self, filename="./brain.txt"):
+        res = open(filename, "w")
+        for x in self.brain.whi.toArray(): res.write(str(x) + ' ')
+        res.write('\n')
+        for x in self.brain.whh.toArray(): res.write(str(x) + ' ')
+        res.write('\n')
+        for x in self.brain.woh.toArray(): res.write(str(x) + ' ')
+        res.write('\n')
+        res.close()
+
+    def read_from_file(self, filename="./brain.txt"):
+        try:
+            res = open(filename, "r")
+            self.brain.whi.fromArray(list(map(float, res.readline().split())))
+            self.brain.whh.fromArray(list(map(float, res.readline().split())))
+            self.brain.woh.fromArray(list(map(float, res.readline().split())))
+            res.close()
+        except Exception as ex:
+            print("Файла не существует")
+
+    def clone(self):
+        res = Snake(self.field)
+        res.brain = self.brain.clone()
+        return res

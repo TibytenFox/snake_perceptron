@@ -32,10 +32,14 @@ class Population:
 		for i in range(len(self.snakes)):
 			self.snakes[i].calculate_fitness()
 
-	def natural_selection(self):
+	def natural_selection(self, elite_count=2):
 		new_snakes = []
 
-		for i in range(len(self.snakes)):
+		sorted_snakes = sorted(self.snakes, key=lambda s: s.fitness, reverse=True)
+		for i in range(elite_count):
+			new_snakes.append(sorted_snakes[i].clone())
+
+		while len(new_snakes) < len(self.snakes):
 			parent1 = self.select_snake()
 			parent2 = self.select_snake()
 

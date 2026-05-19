@@ -62,3 +62,5 @@ class Perceptron:
 		res.whh = self.whh.clone()
 		res.woh = self.woh.clone()
 
+		return res
+
