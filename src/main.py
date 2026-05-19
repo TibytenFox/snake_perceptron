@@ -1,7 +1,8 @@
 import pygame
-from Field import *
-from Snake import *
-from Population import *
+import sys
+from World import World
+from Field import Field
+from Snake import Snake
 
 
 def main_human():
@@ -34,59 +35,23 @@ def main_human():
         clock.tick(fps)
         
 def main_ai():
-    field = Field()
-    population = Population(100, field)
+    """Режим генетического алгоритма"""
+    
+    # 1. Создаем мир (настраиваем гиперпараметры)
+    world = World(
+        width=320, 
+        height=240, 
+        cell_size=20, 
+        pop_size=500, 
+        mutation_rate=0.05, 
+        max_generations=100 
+    )
 
-    best_snakes = []
-    global_mutatin_rate = 0.01
+    # 2. Быстро обучаем (без отрисовки графики для скорости)
+    world.train()
 
-    generations = 100
-
-    while population.gen < generations:
-        population.update()
-        
-        if population.is_done():
-            population.calculate_fintess()
-            best_snakes.append(population.get_best_snake())
-            population.natural_selection()
-            population.mutate(global_mutatin_rate)
-
-    fps = 10
-    clock = pygame.time.Clock()
-    best_snake_ind = max([(best_snakes[i].fitness, i) for i in range(len(best_snakes))])[1]
-    best_snake = best_snakes[best_snake_ind]
-
-    # for i in range(len(best_snakes)):
-    #     print(best_snakes[i].fitness)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    best_snake.reset()
-                    best_snake.food.respawn(field, best_snake)
-                
-                if event.key == pygame.K_q:
-                    pygame.quit()
-                    sys.exit()
-                
-        if best_snake.alive:
-            best_snake.look()
-            best_snake.change_direction_ai()
-            best_snake.move()
-            field.update(best_snake)
-        else:
-            field.screen.fill((0, 0, 0))
-            pygame.display.flip()
-
-            best_snake.reset()
-            best_snake.food.respawn(field, best_snake)
-
-        clock.tick(fps)
+    # 3. Визуализируем самую успешную змейку
+    world.play_best(fps=15)
             
 
 if __name__ == "__main__":

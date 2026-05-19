@@ -1,6 +1,7 @@
 import pygame
-from Food import *
-from Perceptron import *
+from Food import Food
+from Perceptron import Perceptron
+from Field import Field
 
 
 class Snake:
@@ -20,9 +21,9 @@ class Snake:
         self.alive = True
         self.food = Food(field, self)
 
-        self.brain = Perceptron(24, 18, 4)
+        self.brain = Perceptron(20, 18, 4)
         self.decision = []
-        self.vision = [0] * 24
+        self.vision = [0] * 20
 
         self.time_to_live = 200
         self.life_time = 0
@@ -40,7 +41,7 @@ class Snake:
             self.next_direction = "right"
 
     def look(self):
-        self.vision = [0] * 24
+        self.vision = [0] * 20
         dirs = ["up", "up-right", "right", "down-right", "down", "down-left", "left", "up-left"]
 
         border_dis = self.get_border_dis()
@@ -51,8 +52,9 @@ class Snake:
         for i in range(8):
             self.vision[8 * 1 + i] = body_dis[dirs[i]]
 
+        dirs = ["up", "left", "down", "right"]
         apple_dis = self.get_apple_dis()
-        for i in range(8):
+        for i in range(4):
             self.vision[8 * 2 + i] = apple_dis[dirs[i]]
 
     def get_border_dis(self):
@@ -81,42 +83,42 @@ class Snake:
         head = self.positions[0]
 
         for i in range(head[1] - 1, -1, -1):
-            if [head[0], i] in self.positions:
+            if (head[0], i) in self.positions:
                 directions["left"] = 1 / (head[1] - i)
                 break
 
         for i in range(head[1] + 1, self.field.grid_width):
-            if [head[0], i] in self.positions:
+            if (head[0], i) in self.positions:
                 directions["right"] = 1 / (i - head[1])
                 break
 
         for i in range(head[0] + 1, self.field.grid_height):
-            if [i, head[1]] in self.positions:
+            if (i, head[1]) in self.positions:
                 directions["down"] = 1 / (i - head[0])
                 break
 
         for i in range(head[0] - 1, -1, -1):
-            if [i, head[1]] in self.positions:
+            if (i, head[1]) in self.positions:
                 directions["up"] = 1 / (head[0] - i)
                 break
 
         for i in range(1, min(head) + 1):
-            if [head[0] - i, head[1] - i] in self.positions:
+            if (head[0] - i, head[1] - i) in self.positions:
                 directions["up-left"] = 1 / i
                 break
 
         for i in range(1, min(head[0], self.field.grid_width - 1 - head[1]) + 1):
-            if [head[0] - i, head[1] + i] in self.positions:
+            if (head[0] - i, head[1] + i) in self.positions:
                 directions["up-right"] = 1 / i
                 break
 
         for i in range(1, min(self.field.grid_height - 1 - head[0], self.field.grid_width - 1 - head[1]) + 1):
-            if [head[0] + i, head[1] + i] in self.positions:
+            if (head[0] + i, head[1] + i) in self.positions:
                 directions["down-right"] = 1 / i
                 break
 
         for i in range(1, min(self.field.grid_height - 1 - head[0], head[1]) + 1):
-            if [head[0] + i, head[1] - i] in self.positions:
+            if (head[0] + i, head[1] - i) in self.positions:
                 directions["down-left"] = 1 / i
                 break
 
@@ -124,34 +126,20 @@ class Snake:
     
     def get_apple_dis(self):
         directions = {"left": 0,
-                      "up-left": 0,
                       "right": 0,
-                      "up-right": 0,
                       "up": 0,
-                      "down-left": 0,
                       "down": 0,
-                      "down-right": 0
                       }
         head = self.positions[0]
 
-        if head[1] == self.food.position[1] and head[0] >= self.food.position[0]:
-            directions["up"] = 1 / (head[0] - self.food.position[0] + 1)
-        if sum(head) == sum(self.food.position) and head[0] >= self.food.position[0]:
-            directions["up-right"] = 1 / (head[0] - self.food.position[0] + 1)
-        if head[0] == self.food.position[0] and head[1] <= self.food.position[1]:
-            directions["right"] = 1 / (self.food.position[1] - head[1] + 1)
-        if self.food.position[0] - head[0] == self.food.position[1] - head[1] and \
-                head[0] <= self.food.position[0]:
-            directions["down-right"] = 1 / (self.food.position[0] - head[0] + 1)
-        if head[1] == self.food.position[1] and head[0] <= self.food.position[0]:
+        if head[0] <= self.food.position[0]:
             directions["down"] = 1 / (self.food.position[0] - head[0] + 1)
-        if sum(head) == sum(self.food.position) and head[0] <= self.food.position[0]:
-            directions["down-left"] = 1 / (self.food.position[0] - head[0] + 1)
-        if head[0] == self.food.position[0] and head[1] >= self.food.position[1]:
+        if head[0] >= self.food.position[0]:
+            directions["up"] = 1 / (head[0] - self.food.position[0] + 1)
+        if head[1] <= self.food.position[1]:
+            directions["right"] = 1 / (self.food.position[1] - head[1] + 1)
+        if head[1] >= self.food.position[1]:
             directions["left"] = 1 / (head[1] - self.food.position[1] + 1)
-        if self.food.position[0] - head[0] == self.food.position[1] - head[1] and \
-                head[0] >= self.food.position[0]:
-            directions["up-left"] = 1 / (head[0] - self.food.position[0] + 1)
 
         return directions
 
@@ -178,7 +166,10 @@ class Snake:
         self.brain.mutate(mutation_rate)
 
     def calculate_fitness(self):
-        self.fitness = 10 ** (self.score - 2) + self.life_time // 10
+        if self.score < 2:
+            self.fitness = self.life_time * (self.score + 1)
+        else:
+            self.fitness = self.life_time * (self.score ** 2)
 
     def crossover(self, partner):
         child = Snake(self.field)

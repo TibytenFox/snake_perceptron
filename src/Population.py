@@ -1,6 +1,6 @@
 import random
-from Snake import *
-from Field import *
+from Snake import Snake
+from Field import Field
 
 
 class Population:

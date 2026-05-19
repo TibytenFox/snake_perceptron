@@ -1,23 +1,11 @@
 import pygame
 import sys
-from Snake import *
 
 
 class Field:
     """Game field: manages drawing, grid, and game state."""
     def __init__(self, width=640, height=480, cell_size=20):
         pygame.init()
-        
-        # Try to initialize the font module
-        self.font_available = False
-        try:
-            pygame.font.init()
-            # Use pygame's default font if available
-            self.font = pygame.font.Font(None, 20)
-            self.font_available = True
-        except Exception:
-            # Fallback: no text on screen, we'll use window title
-            self.font_available = False
         
         self.width = width
         self.height = height
@@ -49,13 +37,8 @@ class Field:
         pygame.draw.rect(self.screen, color, (x, y, self.cell_size, self.cell_size))
 
     def display_score(self, score):
-        """Show current score - either on screen or in window title."""
-        if self.font_available:
-            label = self.font.render(f"Score: {score}", 1, (255, 255, 0))
-            self.screen.blit(label, (10, 10))
-        else:
-            # Fallback: show score in window title
-            pygame.display.set_caption(f"Snake Game - Score: {score}")
+        """Отображение счета в заголовке окна вместо отрисовки шрифта."""
+        pygame.display.set_caption(f"Snake Game | Score: {score}")
 
     def update(self, snake):
         """Redraw the whole field."""
