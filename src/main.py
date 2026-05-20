@@ -39,25 +39,22 @@ def main_ai():
     
     # 1. Создаем мир (настраиваем гиперпараметры)
     world = World(
-        width=320, 
-        height=240, 
+        width=640, 
+        height=480, 
         cell_size=20, 
         pop_size=200, 
-        mutation_rate=0.05, 
-        max_generations=150
+        mutation_rate=0.01, 
+        max_generations=500
     )
 
-    # Можно добавить уже умную змейку в начальную популяцию
-    # world.population.snakes[0].read_from_file()
+    # Если были прошлые запуски, на которых остановились, можно продолжить
+    # world.population.read_population()
 
     # 2. Быстро обучаем (без отрисовки графики для скорости)
     world.train()
 
-    # 3. Сохраняем мозг лучшей змейки
-    world.all_time_best_snake.save_to_file()
-
-    # 3.5 Загружаем готовую змейку (необязательно)
-    # world.all_time_best_snake.read_from_file()
+    # 3. Сохраняем мозги поколения
+    world.population.save_population()
 
     # 4. Визуализируем самую успешную змейку
     world.play_best(fps=15)

@@ -69,3 +69,11 @@ class Population:
 	def get_best_snake(self):
 		res = max([(self.snakes[i].fitness, i) for i in range(len(self.snakes))])
 		return self.snakes[res[1]]
+	
+	def save_population(self):
+		for i in range(len(self.snakes)):
+			self.snakes[i].save_to_file()
+
+	def read_population(self):
+		for i in range(len(self.snakes)):
+			self.snakes[i].read_from_file()
