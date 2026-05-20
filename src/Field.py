@@ -3,7 +3,7 @@ import sys
 
 
 class Field:
-    """Game field: manages drawing, grid, and game state."""
+    """Игровое поле: отвечает за сетку, графику и вывод состояния."""
     def __init__(self, width=640, height=480, cell_size=20):
         pygame.init()
         
@@ -24,31 +24,31 @@ class Field:
         self.clock = pygame.time.Clock()
 
     def draw_grid(self):
-        """Draw the background grid."""
+        """Отрисовка фоновой сетки."""
         for x in range(0, self.width, self.cell_size):
             pygame.draw.line(self.screen, self.grid_color, (x, 0), (x, self.height))
         for y in range(0, self.height, self.cell_size):
             pygame.draw.line(self.screen, self.grid_color, (0, y), (self.width, y))
 
     def draw_rect(self, pos, color):
-        """Draw a single cell at grid position (row, col)."""
+        """Отрисовка отдельной клетки поля."""
         x = pos[1] * self.cell_size
         y = pos[0] * self.cell_size
         pygame.draw.rect(self.screen, color, (x, y, self.cell_size, self.cell_size))
 
     def display_score(self, score):
-        """Отображение счета в заголовке окна вместо отрисовки шрифта."""
+        """Вывод текущего счета в заголовок окна."""
         pygame.display.set_caption(f"Snake Game | Score: {score}")
 
     def update(self, snake):
-        """Redraw the whole field."""
+        """Перерисовка всех объектов на поле."""
         self.screen.fill(self.bg_color)
         self.draw_grid()
 
-        # Draw food
+        # Еда
         self.draw_rect(snake.food.position, self.food_color)
 
-        # Draw snake
+        # Змейка
         for i, segment in enumerate(snake.positions):
             color = self.snake_head_color if i == 0 else self.snake_color
             self.draw_rect(segment, color)

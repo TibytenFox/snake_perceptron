@@ -5,7 +5,7 @@ from Field import Field
 
 
 class Snake:
-    """Manual snake controlled by arrow keys."""
+    """Управляемый агент-змейка."""
     def __init__(self, field):
         self.field = field
         center_row = field.grid_height // 2
@@ -21,16 +21,18 @@ class Snake:
         self.alive = True
         self.food = Food(field, self)
 
+        # Мозг змейки (20 входов, 2 скрытых слоя по 18, 4 выхода)
         self.brain = Perceptron(20, 18, 4)
         self.decision = []
         self.vision = [0] * 20
 
+        # Ограничение шагов без еды, время жизни и фитнес
         self.time_to_live = 200
         self.life_time = 0
         self.fitness = 0
 
     def change_direction(self, key):
-        """Change snake direction based on key press (no 180° turns)."""
+        """Ручное изменение направления (без разворота на 180 градусов)."""
         if key == pygame.K_UP and self.direction != "down":
             self.next_direction = "up"
         elif key == pygame.K_DOWN and self.direction != "up":
@@ -41,23 +43,28 @@ class Snake:
             self.next_direction = "right"
 
     def look(self):
+        """Сбор информации из окружения (заполнение вектора зрения)."""
         self.vision = [0] * 20
         dirs = ["up", "up-right", "right", "down-right", "down", "down-left", "left", "up-left"]
 
+        # Дистанция до стен (8 направлений)
         border_dis = self.get_border_dis()
         for i in range(8):
             self.vision[i] = border_dis[dirs[i]]
 
+        # Дистанция до своего хвоста (8 направлений)
         body_dis = self.get_body_dis()
         for i in range(8):
             self.vision[8 * 1 + i] = body_dis[dirs[i]]
 
+        # Дистанция до яблока (4 направления)
         dirs = ["up", "left", "down", "right"]
         apple_dis = self.get_apple_dis()
         for i in range(4):
             self.vision[8 * 2 + i] = apple_dis[dirs[i]]
 
     def get_border_dis(self):
+        """Расчет обратного расстояния до стен."""
         return {"up": 1 / (self.positions[0][0] + 1),
                 "up-right": 1 / (min(self.positions[0][0], self.field.grid_width - 1 - self.positions[0][1]) + 1),
                 "left": 1 / (self.positions[0][1] + 1),
@@ -70,6 +77,7 @@ class Snake:
                 }
     
     def get_body_dis(self):
+        """Расчет обратного расстояния до собственного тела."""
         directions = {"left": 0,
                       "up-left": 0,
                       "right": 0,
@@ -125,6 +133,7 @@ class Snake:
         return directions
     
     def get_apple_dis(self):
+        """Расчет обратного расстояния до яблока."""
         directions = {"left": 0,
                       "right": 0,
                       "up": 0,
@@ -144,8 +153,10 @@ class Snake:
         return directions
 
     def change_direction_ai(self):
+        """Выбор направления движения нейросетью."""
         self.decision = self.brain.output(self.vision)
 
+        # Запрет на разворот в противоположную сторону
         opposite = {"up": "down", "down": "up", "left": "right", "right": "left"}
         forbidden = opposite[self.direction]
         idx_map = {"up": 0, "down": 1, "left": 2, "right": 3}
@@ -163,24 +174,27 @@ class Snake:
             self.next_direction = "right"
 
     def mutate(self, mutation_rate):
+        """Мутация весов мозга."""
         self.brain.mutate(mutation_rate)
 
     def calculate_fitness(self):
+        """Расчет приспособленности особи."""
         self.fitness = self.life_time + (self.score ** 3) * 100
 
     def crossover(self, partner):
+        """Скрещивание с партнером для создания потомка."""
         child = Snake(self.field)
         child.brain = self.brain.crossover(partner.brain)
         return child
 
     def move(self):
-        """Move snake one step, check collisions and food."""
+        """Логика шага: движение, поедание еды и проверка столкновений."""
         if not self.alive:
             return
 
         self.direction = self.next_direction
 
-        # Calculate new head position
+        # Вычисление новой позиции головы
         head = self.positions[0]
         if self.direction == "up":
             new_head = (head[0] - 1, head[1])
@@ -188,25 +202,24 @@ class Snake:
             new_head = (head[0] + 1, head[1])
         elif self.direction == "left":
             new_head = (head[0], head[1] - 1)
-        else:  # right
+        else:  # вправо
             new_head = (head[0], head[1] + 1)
 
-        # Insert new head
+        # Вставка новой позиции
         self.positions.insert(0, new_head)
 
         self.time_to_live -= 1
         self.life_time += 1
 
-        # Check food collision
+        # Проверка съедания яблока
         if new_head == self.food.position:
             self.score += 1
             self.time_to_live += 100
             self.food.respawn(self.field, self)
         else:
-            # Remove tail only if no food eaten
             self.positions.pop()
 
-        # Check collisions with walls or self
+        # Проверка выхода за границы и врезания в хвост
         row, col = self.positions[0]
         if (row < 0 or row >= self.field.grid_height or
             col < 0 or col >= self.field.grid_width):
@@ -219,7 +232,7 @@ class Snake:
             self.alive = False
 
     def reset(self):
-        """Reset snake to initial state."""
+        """Сброс состояния змейки к начальному."""
         center_row = self.field.grid_height // 2
         center_col = self.field.grid_width // 2
         self.positions = [
@@ -237,26 +250,29 @@ class Snake:
         self.fitness = 0
 
     def save_to_file(self, filename="./brain.txt"):
+        """Сохранение весов нейросети в файл."""
         res = open(filename, "w")
-        for x in self.brain.whi.toArray(): res.write(str(x) + ' ')
+        for x in self.brain.whi.to_array(): res.write(str(x) + ' ')
         res.write('\n')
-        for x in self.brain.whh.toArray(): res.write(str(x) + ' ')
+        for x in self.brain.whh.to_array(): res.write(str(x) + ' ')
         res.write('\n')
-        for x in self.brain.woh.toArray(): res.write(str(x) + ' ')
+        for x in self.brain.woh.to_array(): res.write(str(x) + ' ')
         res.write('\n')
         res.close()
 
     def read_from_file(self, filename="./brain.txt"):
+        """Загрузка весов нейросети из файла."""
         try:
             res = open(filename, "r")
-            self.brain.whi.fromArray(list(map(float, res.readline().split())))
-            self.brain.whh.fromArray(list(map(float, res.readline().split())))
-            self.brain.woh.fromArray(list(map(float, res.readline().split())))
+            self.brain.whi.from_array(list(map(float, res.readline().split())))
+            self.brain.whh.from_array(list(map(float, res.readline().split())))
+            self.brain.woh.from_array(list(map(float, res.readline().split())))
             res.close()
         except Exception as ex:
             print("Файла не существует")
 
     def clone(self):
+        """Создание точной копии змейки."""
         res = Snake(self.field)
         res.brain = self.brain.clone()
         return res

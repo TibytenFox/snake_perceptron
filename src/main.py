@@ -6,6 +6,7 @@ from Snake import Snake
 
 
 def main_human():
+    """Режим игры для человека (ручное управление клавишами)."""
     field = Field()
     snake = Snake(field)
 
@@ -28,16 +29,15 @@ def main_human():
             snake.move()
             field.update(snake)
         else:
-            # Show game over message
             field.screen.fill((0, 0, 0))
             pygame.display.flip()
 
         clock.tick(fps)
         
 def main_ai():
-    """Режим генетического алгоритма"""
+    """Режим генетического алгоритма (нейроэволюция)."""
     
-    # 1. Создаем мир (настраиваем гиперпараметры)
+    # Создание мира и настройка гиперпараметров
     world = World(
         width=640, 
         height=480, 
@@ -47,16 +47,16 @@ def main_ai():
         max_generations=500
     )
 
-    # Если были прошлые запуски, на которых остановились, можно продолжить
+    # Продолжение эволюции из файла
     # world.population.read_population()
 
-    # 2. Быстро обучаем (без отрисовки графики для скорости)
+    # Запуск быстрого обучения без графики
     world.train()
 
-    # 3. Сохраняем мозги поколения
+    # Сохранение весов лучшего поколения
     world.population.save_population()
 
-    # 4. Визуализируем самую успешную змейку
+    # Демонстрация игры финального чемпиона
     world.play_best(fps=15)
             
 

@@ -5,22 +5,24 @@ from Population import Population
 
 class World:
     def __init__(self, width=320, height=240, cell_size=20, pop_size=100, mutation_rate=0.05, max_generations=500):
+        """Управление эволюционной средой и симуляцией."""
         self.field = Field(width, height, cell_size)
         self.population = Population(pop_size, self.field)
         self.mutation_rate = mutation_rate
         self.max_generations = max_generations
         
-        # Храним глобального победителя за все поколения
+        # Хранение глобального победителя за все поколения
         self.all_time_best_snake = None
         self.historical_best_fitness = 0
 
+        # Списки для ведения истории обучения
         self.history_generations = []
         self.history_max_fitness = []
         self.history_avg_fitness = []
         self.history_max_score = []
 
     def train(self):
-        """Проводит симуляцию генетического алгоритма без отрисовки (для скорости)."""
+        """Цикл обучения популяции без визуализации."""
         print(f"[{'='*40}]")
         print(f" НАЧАЛО ОБУЧЕНИЯ")
         print(f" Поколений: {self.max_generations} | Размер популяции: {len(self.population.snakes)}")
@@ -28,16 +30,15 @@ class World:
         print(f"[{'='*40}]\n")
 
         while self.population.gen <= self.max_generations:
-            # Обрабатываем события Pygame, чтобы окно не "зависало" (Not Responding) в ОС
+            # Предотвращение зависания системного окна
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
-            # Обновляем всех змеек в текущем поколении
             self.population.update()
             
-            # Когда все змейки погибли
+            # Шаг эволюции при гибели всех змеек в поколении
             if self.population.is_done():
                 self.population.calculate_fintess()
                 
@@ -46,10 +47,9 @@ class World:
                 avg_fitness = sum(s.fitness for s in self.population.snakes) / len(self.population.snakes)
                 max_score = max(s.score for s in self.population.snakes)
                 
-                # Сохраняем абсолютного чемпиона
+                # Сохранение абсолютного чемпиона
                 if current_best_snake.fitness > self.historical_best_fitness:
                     self.historical_best_fitness = current_best_snake.fitness
-                    # Ссылка безопасна, т.к. natural_selection создает новые объекты змеек
                     self.all_time_best_snake = current_best_snake 
                     
                 # Красивый вывод в консоль
@@ -64,7 +64,7 @@ class World:
                 self.history_avg_fitness.append(avg_fitness)
                 self.history_max_score.append(max_score)
                 
-                # Эволюция
+                # Селекция и мутация
                 self.population.natural_selection()
                 self.population.mutate(self.mutation_rate)
                 
@@ -76,10 +76,9 @@ class World:
         self.save_history_to_file()
 
     def save_history_to_file(self, filename="./stats.txt"):
-        """Сохраняет собранные метрики в текстовый файл для последующего построения графиков."""
+        """Сохранение метрик в файл для построения графиков."""
         try:
             with open(filename, "w", encoding="utf-8") as f:
-                # Записываем заголовки колонок
                 f.write("generation,max_fitness,avg_fitness,max_score\n")
                 for i in range(len(self.history_generations)):
                     f.write(f"{self.history_generations[i]},"
@@ -91,7 +90,7 @@ class World:
             print(f"Не удалось сохранить статистику: {e}")
 
     def play_best(self, fps=15):
-        """Запускает визуальную симуляцию лучшей найденной змейки."""
+        """Визуализация игры лучшего найденного ИИ-чемпиона."""
         if not self.all_time_best_snake:
             print("Ошибка: Сначала запустите обучение (.train())!")
             return
@@ -102,7 +101,7 @@ class World:
         clock = pygame.time.Clock()
         best = self.all_time_best_snake
         
-        # Сбрасываем её состояние перед показом
+        # Сброс состояние перед показом
         best.reset()
         best.food.respawn(self.field, best)
 
@@ -126,7 +125,7 @@ class World:
                 best.move()
                 self.field.update(best)
             else:
-                # Если чемпион случайно врезался, просто перезапускаем его
+                # Мгновенный перезапуск при столкновении
                 self.field.screen.fill((0, 0, 0))
                 pygame.display.flip()
                 best.reset()
